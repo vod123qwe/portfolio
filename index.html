@@ -73,7 +73,9 @@
   .m-row .m-v{ font:700 12px/1.6 "Space Grotesk",sans-serif; }
 
   /* ---------- deck: WebGL canvas, DOM cards only as fallback ---------- */
-  #gl{ position:fixed; inset:0; z-index:20; display:block; pointer-events:none; }
+  /* canvas is a replaced element: inset alone keeps its intrinsic (buffer) size,
+     so explicit width/height are required or hi-dpr screens get a 2x canvas */
+  #gl{ position:fixed; inset:0; width:100%; height:100%; z-index:20; display:block; pointer-events:none; }
   .deck{ position:fixed; inset:0; z-index:20; perspective:1100px; pointer-events:none; }
   .card{
     position:absolute; left:50%; top:46%;
@@ -147,10 +149,14 @@
   .hint{ position:fixed; right:var(--pad); bottom:20px; z-index:5; }
 
   /* mobile compact title */
-  .m-title{ display:none; position:fixed; left:0; right:0; bottom:64px; z-index:15;
-    flex-direction:column; align-items:center; gap:6px; text-align:center; pointer-events:none; }
+  .m-title{ display:none; position:fixed; left:24px; right:24px; bottom:138px; z-index:15;
+    flex-direction:column; align-items:center; gap:7px; text-align:center; pointer-events:none; }
   .m-title .t-cat{ font:500 10.5px/1 "Space Grotesk",sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
   .m-title .t-name{ font:700 24px/1 "Bricolage Grotesque","Space Grotesk",sans-serif; text-transform:uppercase; }
+  .m-title .t-desc{ font:400 12px/1.5 "Space Grotesk",sans-serif; color:#6f6f6b; max-width:300px; }
+
+  /* mobile dot rail */
+  .dots{ display:none; }
 
   @media (max-width:1280px){ .meta{ display:none; } .menu{ margin-left:9vw; } .audio{ margin-left:9vw; } }
   @media (max-width:1000px){
@@ -158,9 +164,16 @@
     .rail{ display:none; }
     .m-title{ display:flex; }
     .card{ width:min(80vw, 480px); }
-    .count-win{ font-size:clamp(90px, 22vw, 150px); }
+    .count-win{ font-size:clamp(64px, 20vw, 110px); }
     .audio, .where{ display:none; }
     .menu{ margin-left:8vw; }
+    .dots{ position:fixed; right:8px; top:50%; transform:translateY(-50%); z-index:25;
+      display:flex; flex-direction:column; gap:2px; }
+    .dots button{ width:28px; height:26px; background:none; border:0; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; }
+    .dots button i{ display:block; width:6px; height:6px; border-radius:3px; background:var(--faint);
+      transition:height .25s ease, background .25s ease; }
+    .dots button.on i{ height:22px; background:var(--ink); }
   }
 </style>
 </head>
@@ -209,7 +222,10 @@
 <div class="m-title" id="mTitle">
   <span class="t-cat" id="mTitleCat"></span>
   <span class="t-name" id="mTitleName"></span>
+  <span class="t-desc" id="mTitleDesc"></span>
 </div>
+
+<nav class="dots" id="dots" aria-label="Projects"></nav>
 
 <div class="hint small lbl">Scroll</div>
 
@@ -217,15 +233,17 @@
 (function(){
   "use strict";
 
+  var UNSPLASH = "https://images.unsplash.com/photo-";
+  var IMQ = "?w=1200&q=80&fit=crop&auto=format";
   var projects = [
-    { name:"Portfel",     cat:"Personal App",   desc:"A one file budget PWA with a live mortgage dashboard and Gist sync.",        stack:"HTML, JS, Chart.js",    year:"2025", status:"Live",     accent:"#F4B400", fg:"#1d1d1d", mock:"finance" },
-    { name:"Parkove",     cat:"Mobile Game",    desc:"A field game for Krakow parks with fog of war and POI quests.",              stack:"React, MapLibre",       year:"2026", status:"In build", accent:"#2F7A4D", fg:"#ffffff", mock:"map" },
-    { name:"Type Tokens", cat:"Figma Plugin",   desc:"Generates a full Material 3 typography system on Figma variables.",          stack:"TypeScript, Figma API", year:"2026", status:"Live",     accent:"#5B5BD6", fg:"#ffffff", mock:"typespec" },
-    { name:"Grid Blob",   cat:"Design Tool",    desc:"Banner generator with a gooey grid and true vector SVG export.",             stack:"Canvas, SVG",           year:"2025", status:"Live",     accent:"#C13BBE", fg:"#ffffff", mock:"blob" },
-    { name:"Lottie Studio",cat:"Design Tool",   desc:"A small web editor for keyframing Lottie animations.",                       stack:"React, lottie-web",     year:"2026", status:"v0.1",     accent:"#0FA48A", fg:"#ffffff", mock:"lottie" },
-    { name:"TypeStorm",   cat:"Game",           desc:"A typing shooter on vanilla canvas, words are the ammo.",                    stack:"JS, Canvas",            year:"2025", status:"v0.1",     accent:"#FF4D2E", fg:"#ffffff", mock:"poster" },
-    { name:"Win98 Music", cat:"Experiment",     desc:"A Windows 98 desktop where artist folders open in Winamp.",                  stack:"React, Zustand",        year:"2025", status:"Live",     accent:"#0B7E7E", fg:"#ffffff", mock:"win98" },
-    { name:"Meander",     cat:"Mobile Concept", desc:"Multi persona trip generator with postcards and local stories.",             stack:"React Native",          year:"2026", status:"WIP",      accent:"#2E63E7", fg:"#ffffff", mock:"trip" }
+    { name:"Portfel",     cat:"Personal App",   desc:"A one file budget PWA with a live mortgage dashboard and Gist sync.",        stack:"HTML, JS, Chart.js",    year:"2025", status:"Live",     accent:"#F4B400", fg:"#1d1d1d", mock:"finance",  img:UNSPLASH+"1512941937669-90a1b58e7e9c"+IMQ },
+    { name:"Parkove",     cat:"Mobile Game",    desc:"A field game for Krakow parks with fog of war and POI quests.",              stack:"React, MapLibre",       year:"2026", status:"In build", accent:"#2F7A4D", fg:"#ffffff", mock:"map",      img:UNSPLASH+"1481487196290-c152efe083f5"+IMQ },
+    { name:"Type Tokens", cat:"Figma Plugin",   desc:"Generates a full Material 3 typography system on Figma variables.",          stack:"TypeScript, Figma API", year:"2026", status:"Live",     accent:"#5B5BD6", fg:"#ffffff", mock:"typespec", img:UNSPLASH+"1561070791-2526d30994b5"+IMQ },
+    { name:"Grid Blob",   cat:"Design Tool",    desc:"Banner generator with a gooey grid and true vector SVG export.",             stack:"Canvas, SVG",           year:"2025", status:"Live",     accent:"#C13BBE", fg:"#ffffff", mock:"blob",     img:UNSPLASH+"1558655146-d09347e92766"+IMQ },
+    { name:"Lottie Studio",cat:"Design Tool",   desc:"A small web editor for keyframing Lottie animations.",                       stack:"React, lottie-web",     year:"2026", status:"v0.1",     accent:"#0FA48A", fg:"#ffffff", mock:"lottie",   img:UNSPLASH+"1558655146-9f40138edfeb"+IMQ },
+    { name:"TypeStorm",   cat:"Game",           desc:"A typing shooter on vanilla canvas, words are the ammo.",                    stack:"JS, Canvas",            year:"2025", status:"v0.1",     accent:"#FF4D2E", fg:"#ffffff", mock:"poster",   img:UNSPLASH+"1547658719-da2b51169166"+IMQ },
+    { name:"Win98 Music", cat:"Experiment",     desc:"A Windows 98 desktop where artist folders open in Winamp.",                  stack:"React, Zustand",        year:"2025", status:"Live",     accent:"#0B7E7E", fg:"#ffffff", mock:"win98",    img:UNSPLASH+"1526406915894-7bcd65f60845"+IMQ },
+    { name:"Meander",     cat:"Mobile Concept", desc:"Multi persona trip generator with postcards and local stories.",             stack:"React Native",          year:"2026", status:"WIP",      accent:"#2E63E7", fg:"#ffffff", mock:"trip",     img:UNSPLASH+"1620641788421-7a1c342ea42e"+IMQ }
   ];
 
   var N = projects.length, MAX = N - 1;
@@ -276,6 +294,17 @@
     strip.appendChild(s);
   });
   $("#total").textContent = "/" + pad2(N);
+
+  var dotsWrap = $("#dots");
+  var dots = projects.map(function(p,i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-label", p.name);
+    b.innerHTML = "<i></i>";
+    b.addEventListener("click", function(){ go(i); });
+    dotsWrap.appendChild(b);
+    return b;
+  });
 
   /* ---------- cover painter (Canvas2D -> GL texture) ---------- */
   var TW = 1120, TH = 784, TPAD = 48;
@@ -551,8 +580,21 @@
     lottie:mLottie, typespec:mTypespec, win98:mWin98, poster:mPoster
   };
 
+  function paintPhoto(g, img){
+    var s = Math.max(TW/img.naturalWidth, TH/img.naturalHeight);
+    var dw = img.naturalWidth*s, dh = img.naturalHeight*s;
+    g.drawImage(img, (TW-dw)/2, (TH-dh)/2, dw, dh);
+    g.save();
+    g.globalAlpha = 0.06;
+    g.globalCompositeOperation = "overlay";
+    g.fillStyle = g.createPattern(noiseTile, "repeat");
+    g.fillRect(0,0,TW,TH);
+    g.restore();
+  }
+
   function paintCover(g, p, i){
     g.clearRect(0,0,TW,TH);
+    if (p._img){ paintPhoto(g, p._img); return; }
     g.save();
 
     var bg = g.createLinearGradient(0,0,TW*0.35,TH);
@@ -745,6 +787,24 @@
 
   try { glOK = initGL(); } catch(e){ glOK = false; window.__glErr = String(e && e.message || e); }
 
+  /* real photo placeholders: swap in per card as each loads, keep the
+     procedural mockup whenever a photo cannot load */
+  if (glOK){
+    projects.forEach(function(p,i){
+      if (!p.img) return;
+      var im = new Image();
+      im.crossOrigin = "anonymous";
+      im.decoding = "async";
+      im.onload = function(){
+        p._img = im;
+        paintCover(covCtx[i], p, i);
+        gl.bindTexture(gl.TEXTURE_2D, tex[i]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, covCanvas[i]);
+      };
+      im.src = p.img;
+    });
+  }
+
   /* ---------- DOM fallback cards (no WebGL only) ---------- */
   var deck = $("#deck"), cards = [];
   if (!glOK){
@@ -865,6 +925,7 @@
     if (i === activeIdx) return;
     activeIdx = i;
     entries.forEach(function(e,j){ e.classList.toggle("on", j===i); });
+    dots.forEach(function(d,j){ d.classList.toggle("on", j===i); });
     pendingIdx = i;
     pendingAt = performance.now();
     meta.classList.add("sw");
@@ -880,6 +941,7 @@
     $("#mStat").textContent = p.status;
     $("#mTitleName").textContent = p.name;
     $("#mTitleCat").textContent = p.cat;
+    $("#mTitleDesc").textContent = p.desc;
     meta.classList.remove("sw");
     pendingIdx = -1;
   }

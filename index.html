@@ -155,6 +155,14 @@
 
   .hint{ position:fixed; right:var(--pad); bottom:20px; z-index:5; }
 
+  /* custom magnetic cursor: white dot on difference blend, morphs with velocity */
+  .cur{ display:none; position:fixed; left:0; top:0; width:12px; height:12px; border-radius:50%;
+    background:#fff; mix-blend-mode:difference; z-index:60; pointer-events:none; will-change:transform; }
+  @media (hover:hover) and (pointer:fine){
+    body, a, button{ cursor:none; }
+    .cur{ display:block; }
+  }
+
   /* mobile compact title */
   .m-title{ display:none; position:fixed; left:24px; right:24px; bottom:138px; z-index:15;
     flex-direction:column; align-items:center; gap:7px; text-align:center; pointer-events:none; }
@@ -237,6 +245,7 @@
 <nav class="dots" id="dots" aria-label="Projects"></nav>
 
 <div class="hint small lbl">Scroll</div>
+<div class="cur" id="cur"></div>
 
 <script>
 (function(){
@@ -682,8 +691,8 @@
     "#endif",
     "varying vec2 vUv;",
     "uniform sampler2D uTex;",
-    "uniform vec2 uSize, uDir;",
-    "uniform float uOpacity, uFlexN, uTime, uPhase, uMode, uBlur;",
+    "uniform vec2 uSize, uDir, uMouse;",
+    "uniform float uOpacity, uFlexN, uTime, uPhase, uMode, uBlur, uHover;",
     "float rrect(vec2 uv, vec2 size, float r){",
     "  vec2 p = (uv - 0.5) * size;",
     "  vec2 q = abs(p) - (size*0.5 - vec2(r));",
@@ -701,7 +710,18 @@
     "  if (mask <= 0.0) discard;",
     "  vec2 uv = vUv;",
     "  uv += vec2(sin(uv.y*9.0 + uTime*2.1 + uPhase), sin(uv.x*7.0 - uTime*1.6 + uPhase)) * (uFlexN * 0.007);",
-    "  vec2 ca = uDir * uFlexN * 0.009;",                              /* chromatic aberration */
+    "  float mfall = 0.0;",
+    "  vec2 mdir = vec2(0.0);",
+    "  if (uHover > 0.002){",                                          /* cursor liquid lens */
+    "    vec2 md = uv - uMouse;",
+    "    md.x *= uSize.x / uSize.y;",
+    "    float mdist = length(md);",
+    "    mfall = exp(-mdist*mdist*20.0) * uHover;",
+    "    if (mdist > 0.0001) mdir = md / mdist;",
+    "    float mwob = 1.0 + 0.3*sin(uTime*4.2 + mdist*26.0 + uPhase);",
+    "    uv -= mdir * mfall * 0.05 * mwob;",
+    "  }",
+    "  vec2 ca = uDir * uFlexN * 0.009 + mdir * mfall * 0.010;",       /* chromatic aberration */
     "  vec3 col;",
     "  col.r = texture2D(uTex, uv + ca).r;",
     "  col.g = texture2D(uTex, uv).g;",
@@ -745,7 +765,7 @@
     gl.useProgram(prog);
 
     ["uVp","uSize","uCenter","uScale2","uDir","uTz","uRotZ","uTiltX","uRotY","uFlex","uTime",
-     "uPhase","uPersp","uIdle","uTex","uOpacity","uFlexN","uMode","uBlur"].forEach(function(n){
+     "uPhase","uPersp","uIdle","uTex","uOpacity","uFlexN","uMode","uBlur","uMouse","uHover"].forEach(function(n){
       U[n] = gl.getUniformLocation(prog, n);
     });
 
@@ -879,9 +899,24 @@
 
   /* ---------- scroll engine (virtual, lerped) ---------- */
   var RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var FINE = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
   var target = 0, current = 0, prevPos = 0, vel = 0;
   var flex = 0, flexV = 0, flexHold = null; /* underdamped spring chasing velocity: the material lag */
   var lastInput = 0, last = performance.now(), introStart = last;
+
+  /* mouse state: raw px, normalized target, smoothed for parallax */
+  var mpx = -1000, mpy = -1000, mNX = 0, mNY = 0, mSX = 0, mSY = 0;
+  var linkHover = false, cardHover = false, cardHoverT = 0;
+  var curEl = $("#cur");
+  var curX = -100, curY = -100, curAng = 0, curStretch = 1, curScale = 1;
+
+  window.addEventListener("pointermove", function(e){
+    if (e.pointerType === "touch") return;
+    mpx = e.clientX; mpy = e.clientY;
+    mNX = (mpx / vw) * 2 - 1;
+    mNY = (mpy / vh) * 2 - 1;
+    linkHover = !!(e.target && e.target.closest && e.target.closest("a,button"));
+  });
 
   function bump(){ lastInput = performance.now(); }
   function go(i){ target = clamp(i, 0, MAX); bump(); }
@@ -1010,6 +1045,54 @@
     return [cw, cw*0.7];
   }
 
+  /* parallax, front-card magnet and the custom cursor; runs after computePoses */
+  function applyMouse(dt){
+    if (!FINE) return;
+    var fi = 0;
+    for (var i=1;i<N;i++) if (pose[i].ad < pose[fi].ad) fi = i;
+    var size = cardSize(), ps = pose[fi];
+    var cx = vw/2 + ps.x, cy = vh*0.46 + ps.y;
+    cardHover = ps.ad < 0.6 &&
+      Math.abs(mpx - cx) < size[0]*0.5 + 16 &&
+      Math.abs(mpy - cy) < size[1]*0.5 + 16;
+    cardHoverT += (((cardHover && !RM) ? 1 : 0) - cardHoverT) * (1 - Math.exp(-dt*10));
+
+    var lx = clamp((mpx - cx) / size[0], -0.7, 0.7);
+    var ly = clamp((mpy - cy) / size[1], -0.7, 0.7);
+
+    if (!RM){
+      for (var j=0;j<N;j++){
+        var pj = pose[j], par = 1.25 - Math.min(pj.ad, 1.25);
+        pj.x += -mSX * 16 * par;
+        pj.y += -mSY * 10 * par;
+        pj.ry += mSX * 2.4;
+        pj.tx += -mSY * 1.8;
+      }
+      ps.x += cardHoverT * lx * size[0] * 0.05;
+      ps.y += cardHoverT * ly * size[1] * 0.05;
+      ps.ry += cardHoverT * lx * 7;
+      ps.tx += -cardHoverT * ly * 5;
+    }
+
+    /* cursor: magnetic pull toward the hovered card center, stretch by velocity */
+    var tx = mpx + (cx - mpx) * 0.12 * cardHoverT;
+    var ty = mpy + (cy - mpy) * 0.12 * cardHoverT;
+    var kC = 1 - Math.exp(-dt*20);
+    var pvx = curX, pvy = curY;
+    curX += (tx - curX) * kC;
+    curY += (ty - curY) * kC;
+    var vx = (curX - pvx) / Math.max(dt, 0.001), vy = (curY - pvy) / Math.max(dt, 0.001);
+    var spd = Math.hypot(vx, vy);
+    if (spd > 60) curAng = Math.atan2(vy, vx);
+    curStretch += ((RM ? 1 : clamp(1 + spd*0.00035, 1, 1.35)) - curStretch) * kC;
+    var scT = linkHover ? 2.3 : cardHover ? 4.4 : 1;
+    curScale += (scT - curScale) * (1 - Math.exp(-dt*12));
+    curEl.style.transform =
+      "translate3d(" + curX.toFixed(1) + "px," + curY.toFixed(1) + "px,0) translate(-50%,-50%)" +
+      " rotate(" + (curAng*180/Math.PI).toFixed(1) + "deg)" +
+      " scale(" + (curScale*curStretch).toFixed(3) + "," + (curScale/curStretch).toFixed(3) + ")";
+  }
+
   function renderGL(now){
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -1048,6 +1131,10 @@
       gl.uniform1f(U.uFlex, fpx);
       gl.uniform1f(U.uOpacity, ps.o);
       gl.uniform1f(U.uBlur, clamp((ps.ad - 0.35) / 0.9, 0, 1));
+      gl.uniform2f(U.uMouse,
+        (mpx - cx) / (size[0]*ps.sx) + 0.5,
+        (mpy - cy) / (size[1]*ps.sy) + 0.5);
+      gl.uniform1f(U.uHover, cardHoverT * Math.max(0, 1 - ps.ad*2.2));
 
       gl.uniform1f(U.uMode, 1);                          /* shadow first, then card */
       gl.uniform2f(U.uCenter, cx + 10, cy + 30);
@@ -1103,8 +1190,12 @@
     flexV += ((vel - flex) * 90 - flexV * 7) * dt;
     flex = clamp(flex + flexV * dt, -8, 8);
     if (flexHold !== null){ flex = flexHold; flexV = 0; }
+    var kM = 1 - Math.exp(-dt*6);
+    mSX += (mNX - mSX) * kM;
+    mSY += (mNY - mSY) * kM;
 
     computePoses(now);
+    applyMouse(dt);
     if (glOK) renderGL(now); else renderDOM();
     renderUI();
     processSwap(now);

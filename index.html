@@ -155,8 +155,9 @@
 
   .hint{ position:fixed; right:var(--pad); bottom:20px; z-index:5; }
 
-  /* custom magnetic cursor: white dot on difference blend, morphs with velocity */
-  .cur{ display:none; position:fixed; left:0; top:0; width:12px; height:12px; border-radius:50%;
+  /* custom magnetic cursor: white dot on difference blend, morphs with velocity.
+     Large base size scaled DOWN keeps the raster crisp at every state. */
+  .cur{ display:none; position:fixed; left:0; top:0; width:64px; height:64px; border-radius:50%;
     background:#fff; mix-blend-mode:difference; z-index:60; pointer-events:none; will-change:transform; }
   @media (hover:hover) and (pointer:fine){
     body, a, button{ cursor:none; }
@@ -712,16 +713,22 @@
     "  uv += vec2(sin(uv.y*9.0 + uTime*2.1 + uPhase), sin(uv.x*7.0 - uTime*1.6 + uPhase)) * (uFlexN * 0.007);",
     "  float mfall = 0.0;",
     "  vec2 mdir = vec2(0.0);",
+    "  vec2 shardCa = vec2(0.0);",
     "  if (uHover > 0.002){",                                          /* cursor liquid lens */
     "    vec2 md = uv - uMouse;",
     "    md.x *= uSize.x / uSize.y;",
     "    float mdist = length(md);",
-    "    mfall = exp(-mdist*mdist*20.0) * uHover;",
+    "    mfall = exp(-mdist*mdist*14.0) * uHover;",
     "    if (mdist > 0.0001) mdir = md / mdist;",
-    "    float mwob = 1.0 + 0.3*sin(uTime*4.2 + mdist*26.0 + uPhase);",
-    "    uv -= mdir * mfall * 0.05 * mwob;",
+    "    float mwob = 1.0 + 0.35*sin(uTime*4.2 + mdist*24.0 + uPhase);",
+    "    uv -= mdir * mfall * 0.075 * mwob;",
+    "    vec2 cellId = floor(uv * vec2(30.0, 21.0));",                 /* glass shard cells */
+    "    vec2 cellRnd = vec2(hash(cellId), hash(cellId + 7.31)) - 0.5;",
+    "    float cpulse = 0.75 + 0.25*sin(uTime*1.6 + (cellRnd.x + cellRnd.y)*12.566);",
+    "    uv += cellRnd * 0.085 * mfall * cpulse;",
+    "    shardCa = cellRnd * 0.016 * mfall;",
     "  }",
-    "  vec2 ca = uDir * uFlexN * 0.009 + mdir * mfall * 0.010;",       /* chromatic aberration */
+    "  vec2 ca = uDir * uFlexN * 0.009 + mdir * mfall * 0.022 + shardCa;", /* chromatic aberration */
     "  vec3 col;",
     "  col.r = texture2D(uTex, uv + ca).r;",
     "  col.g = texture2D(uTex, uv).g;",
@@ -1087,10 +1094,11 @@
     curStretch += ((RM ? 1 : clamp(1 + spd*0.00035, 1, 1.35)) - curStretch) * kC;
     var scT = linkHover ? 2.3 : cardHover ? 4.4 : 1;
     curScale += (scT - curScale) * (1 - Math.exp(-dt*12));
+    var CB = 12/64; /* dot state = 12px of the 64px base */
     curEl.style.transform =
       "translate3d(" + curX.toFixed(1) + "px," + curY.toFixed(1) + "px,0) translate(-50%,-50%)" +
       " rotate(" + (curAng*180/Math.PI).toFixed(1) + "deg)" +
-      " scale(" + (curScale*curStretch).toFixed(3) + "," + (curScale/curStretch).toFixed(3) + ")";
+      " scale(" + (curScale*curStretch*CB).toFixed(3) + "," + (curScale/curStretch*CB).toFixed(3) + ")";
   }
 
   function renderGL(now){

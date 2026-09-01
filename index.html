@@ -76,6 +76,13 @@
   /* canvas is a replaced element: inset alone keeps its intrinsic (buffer) size,
      so explicit width/height are required or hi-dpr screens get a 2x canvas */
   #gl{ position:fixed; inset:0; width:100%; height:100%; z-index:20; display:block; pointer-events:none; }
+
+  /* atmospheric fog: cards surface out of the background at both ends of the rail */
+  .fog{ position:fixed; left:0; right:0; z-index:21; pointer-events:none; }
+  .fog.top{ top:0; height:24vh;
+    background:linear-gradient(to bottom, rgba(236,236,234,1) 0%, rgba(236,236,234,0.85) 30%, rgba(236,236,234,0) 100%); }
+  .fog.bot{ bottom:0; height:18vh;
+    background:linear-gradient(to top, rgba(236,236,234,0.92) 0%, rgba(236,236,234,0) 100%); }
   .deck{ position:fixed; inset:0; z-index:20; perspective:1100px; pointer-events:none; }
   .card{
     position:absolute; left:50%; top:46%;
@@ -205,6 +212,8 @@
 </aside>
 
 <canvas id="gl"></canvas>
+<div class="fog top"></div>
+<div class="fog bot"></div>
 <div class="deck" id="deck"></div>
 
 <nav class="rail" aria-label="Projects">
@@ -674,7 +683,7 @@
     "varying vec2 vUv;",
     "uniform sampler2D uTex;",
     "uniform vec2 uSize, uDir;",
-    "uniform float uOpacity, uFlexN, uTime, uPhase, uMode;",
+    "uniform float uOpacity, uFlexN, uTime, uPhase, uMode, uBlur;",
     "float rrect(vec2 uv, vec2 size, float r){",
     "  vec2 p = (uv - 0.5) * size;",
     "  vec2 q = abs(p) - (size*0.5 - vec2(r));",
@@ -697,6 +706,19 @@
     "  col.r = texture2D(uTex, uv + ca).r;",
     "  col.g = texture2D(uTex, uv).g;",
     "  col.b = texture2D(uTex, uv - ca).b;",
+    "  if (uBlur > 0.002){",                                           /* depth of field ring blur */
+    "    float rb = uBlur * 0.018;",
+    "    vec3 acc = vec3(0.0);",
+    "    acc += texture2D(uTex, uv + vec2(rb, 0.0)).rgb;",
+    "    acc += texture2D(uTex, uv - vec2(rb, 0.0)).rgb;",
+    "    acc += texture2D(uTex, uv + vec2(0.0, rb)).rgb;",
+    "    acc += texture2D(uTex, uv - vec2(0.0, rb)).rgb;",
+    "    acc += texture2D(uTex, uv + vec2(rb, rb) * 0.707).rgb;",
+    "    acc += texture2D(uTex, uv - vec2(rb, rb) * 0.707).rgb;",
+    "    acc += texture2D(uTex, uv + vec2(rb, -rb) * 0.707).rgb;",
+    "    acc += texture2D(uTex, uv - vec2(rb, -rb) * 0.707).rgb;",
+    "    col = mix(col, acc / 8.0, 0.85 * clamp(uBlur, 0.0, 1.0));",
+    "  }",
     "  col += (hash(vUv * 700.0 + uTime * 0.7) - 0.5) * 0.05;",        /* live grain */
     "  gl_FragColor = vec4(col, uOpacity * mask);",
     "}"
@@ -723,7 +745,7 @@
     gl.useProgram(prog);
 
     ["uVp","uSize","uCenter","uScale2","uDir","uTz","uRotZ","uTiltX","uRotY","uFlex","uTime",
-     "uPhase","uPersp","uIdle","uTex","uOpacity","uFlexN","uMode"].forEach(function(n){
+     "uPhase","uPersp","uIdle","uTex","uOpacity","uFlexN","uMode","uBlur"].forEach(function(n){
       U[n] = gl.getUniformLocation(prog, n);
     });
 
@@ -1025,6 +1047,7 @@
       gl.uniform1f(U.uRotY, ps.ry * DEG);
       gl.uniform1f(U.uFlex, fpx);
       gl.uniform1f(U.uOpacity, ps.o);
+      gl.uniform1f(U.uBlur, clamp((ps.ad - 0.35) / 0.9, 0, 1));
 
       gl.uniform1f(U.uMode, 1);                          /* shadow first, then card */
       gl.uniform2f(U.uCenter, cx + 10, cy + 30);

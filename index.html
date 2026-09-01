@@ -7,7 +7,7 @@
 <title>Jarek. Selected work</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Inter+Tight:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#ECECEA;
@@ -21,14 +21,14 @@
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:Inter, "Segoe UI", system-ui, sans-serif;
+    font-family:"Space Grotesk", "Segoe UI", system-ui, sans-serif;
     -webkit-font-smoothing:antialiased;
     user-select:none;
     cursor:default;
     touch-action:none;
   }
   .small{ font-size:11.5px; font-weight:700; letter-spacing:.01em; line-height:1.5; }
-  .lbl{ color:var(--mut); font-weight:600; }
+  .lbl{ color:var(--mut); font-weight:500; }
 
   /* ---------- header ---------- */
   header{
@@ -42,14 +42,14 @@
     width:46px; height:58px;
     border:1.5px solid var(--ink); border-radius:2px;
     display:flex; align-items:center; justify-content:center;
-    font:800 15px/1 "Inter Tight", Inter, sans-serif;
+    font:800 15px/1 "Bricolage Grotesque", "Space Grotesk", sans-serif;
     letter-spacing:.02em;
   }
   .menu{ margin-left:14.5vw; }
   .menu .lbl{ display:block; margin-bottom:12px; }
   .menu a{
     display:block; color:var(--ink); text-decoration:none;
-    font:800 13.5px/1.4 Inter, sans-serif; text-transform:uppercase;
+    font:700 13.5px/1.4 "Space Grotesk", sans-serif; text-transform:uppercase;
     letter-spacing:.01em;
   }
   .menu a:hover{ opacity:.55; }
@@ -59,7 +59,7 @@
   .where{ margin-left:6.5vw; }
   .where span{ display:block; }
   .mail{ margin-left:auto; white-space:nowrap; }
-  .mail a{ color:var(--ink); font-weight:800; }
+  .mail a{ color:var(--ink); font-weight:700; }
 
   /* ---------- left meta rail ---------- */
   .meta{
@@ -69,8 +69,8 @@
   }
   .meta.sw{ opacity:0; transform:translateY(6px); }
   .m-row{ display:flex; margin-bottom:10px; }
-  .m-row .m-l{ width:86px; flex:0 0 86px; color:var(--mut); font:600 11.5px/1.6 Inter,sans-serif; }
-  .m-row .m-v{ font:700 12px/1.6 Inter,sans-serif; }
+  .m-row .m-l{ width:86px; flex:0 0 86px; color:var(--mut); font:500 11.5px/1.6 "Space Grotesk",sans-serif; }
+  .m-row .m-v{ font:700 12px/1.6 "Space Grotesk",sans-serif; }
 
   /* ---------- deck: WebGL canvas, DOM cards only as fallback ---------- */
   #gl{ position:fixed; inset:0; z-index:20; display:block; pointer-events:none; }
@@ -107,12 +107,12 @@
   .c-top, .c-bot{
     position:relative; z-index:2;
     display:flex; justify-content:space-between;
-    font:700 11px/1.4 Inter,sans-serif; text-transform:uppercase; letter-spacing:.06em;
+    font:700 11px/1.4 "Space Grotesk",sans-serif; text-transform:uppercase; letter-spacing:.06em;
     opacity:.85;
   }
   .c-name{
     position:relative; z-index:2; margin:auto 0; text-align:center;
-    font:800 clamp(30px, 3.6vw, 56px)/0.95 "Inter Tight", Inter, sans-serif;
+    font:800 clamp(30px, 3.6vw, 56px)/0.95 "Bricolage Grotesque", "Space Grotesk", sans-serif;
     text-transform:uppercase; letter-spacing:-.02em;
   }
 
@@ -122,12 +122,12 @@
   .entry{
     display:block; width:100%; padding:30px 0;
     background:none; border:0; cursor:pointer; text-align:center;
-    font-family:Inter, sans-serif; color:var(--faint);
+    font-family:"Space Grotesk", sans-serif; color:var(--faint);
   }
-  .entry .e-cat{ display:block; font:600 10.5px/1 Inter,sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); margin-bottom:12px; }
-  .entry .e-name{ display:block; font:700 27px/1.05 "Inter Tight", Inter, sans-serif; text-transform:uppercase; letter-spacing:.005em; color:inherit; }
-  .entry .e-div{ display:block; font:400 13px/1 Inter,sans-serif; margin:14px 0 12px; opacity:.7; }
-  .entry .e-desc{ font:500 12.5px/1.55 Inter,sans-serif; max-width:300px; margin:0 auto; }
+  .entry .e-cat{ display:block; font:500 10.5px/1 "Space Grotesk",sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); margin-bottom:12px; }
+  .entry .e-name{ display:block; font:700 27px/1.05 "Bricolage Grotesque", "Space Grotesk", sans-serif; text-transform:uppercase; letter-spacing:.005em; color:inherit; }
+  .entry .e-div{ display:block; font:400 13px/1 "Space Grotesk",sans-serif; margin:14px 0 12px; opacity:.7; }
+  .entry .e-desc{ font:500 12.5px/1.55 "Space Grotesk",sans-serif; max-width:300px; margin:0 auto; }
   .entry.on{ color:var(--ink); }
   .entry.on .e-desc{ color:#5c5c58; }
   .entry:focus-visible{ outline:2px solid var(--ink); outline-offset:4px; border-radius:2px; }
@@ -138,19 +138,19 @@
   .count-row{ display:flex; align-items:flex-start; }
   .count-win{
     height:.8em; overflow:hidden;
-    font:800 clamp(120px, 16vw, 230px)/0.8 "Inter Tight", Inter, sans-serif;
+    font:800 clamp(120px, 16vw, 230px)/0.8 "Bricolage Grotesque", "Space Grotesk", sans-serif;
     letter-spacing:-.04em;
   }
   .count-strip span{ display:block; height:.8em; }
-  .count-total{ font:700 15px/1 Inter,sans-serif; color:var(--mut); margin:14px 0 0 10px; }
+  .count-total{ font:700 15px/1 "Space Grotesk",sans-serif; color:var(--mut); margin:14px 0 0 10px; }
 
   .hint{ position:fixed; right:var(--pad); bottom:20px; z-index:5; }
 
   /* mobile compact title */
   .m-title{ display:none; position:fixed; left:0; right:0; bottom:64px; z-index:15;
     flex-direction:column; align-items:center; gap:6px; text-align:center; pointer-events:none; }
-  .m-title .t-cat{ font:600 10.5px/1 Inter,sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
-  .m-title .t-name{ font:700 24px/1 "Inter Tight",Inter,sans-serif; text-transform:uppercase; }
+  .m-title .t-cat{ font:500 10.5px/1 "Space Grotesk",sans-serif; letter-spacing:.08em; text-transform:uppercase; color:var(--mut); }
+  .m-title .t-name{ font:700 24px/1 "Bricolage Grotesque","Space Grotesk",sans-serif; text-transform:uppercase; }
 
   @media (max-width:1280px){ .meta{ display:none; } .menu{ margin-left:9vw; } .audio{ margin-left:9vw; } }
   @media (max-width:1000px){
@@ -321,7 +321,7 @@
     shadowOn(g); rr(g,px,py,pw,ph,46); g.fillStyle="#fff"; g.fill(); shadowOff(g);
     g.strokeStyle=inka(0.10); g.lineWidth=2; rr(g,px,py,pw,ph,46); g.stroke();
     var sx=px+28, sy=py+40, sw=pw-56;
-    g.fillStyle=inka(0.75); g.font="700 19px Inter, sans-serif"; g.textAlign="left";
+    g.fillStyle=inka(0.75); g.font='700 19px "Space Grotesk", sans-serif'; g.textAlign="left";
     g.fillText("9:41", sx, sy+4);
     bar(g, px+pw-28-44, sy-9, 44, 13, inka(0.14));
     /* tab bar */
@@ -347,10 +347,10 @@
     var f = phoneFrame(g);
     var sx=f.sx, y=f.top+26;
     bar(g, sx, y, 88, 12, inka(0.16));
-    g.fillStyle=INK; g.font='800 60px "Inter Tight", Inter, sans-serif'; g.textAlign="left";
+    g.fillStyle=INK; g.font='800 60px "Bricolage Grotesque", "Space Grotesk", sans-serif'; g.textAlign="left";
     var big="24 560"; g.fillText(big, sx, y+82);
     var wNum=g.measureText(big).width;
-    g.fillStyle=inka(0.40); g.font="700 19px Inter, sans-serif"; g.fillText("PLN", sx+wNum+10, y+82);
+    g.fillStyle=inka(0.40); g.font='700 19px "Space Grotesk", sans-serif'; g.fillText("PLN", sx+wNum+10, y+82);
     var chY=y+248, bw2=25, gap=14, hts=[64,104,56,140,86,122,74];
     for (var k=0;k<7;k++){
       var h=hts[k];
@@ -475,11 +475,11 @@
   function mTypespec(g,p){
     var f = browserFrame(g);
     g.fillStyle=INK; g.textAlign="left";
-    g.font='800 265px "Inter Tight", Inter, sans-serif';
+    g.font='800 265px "Bricolage Grotesque", "Space Grotesk", sans-serif';
     g.fillText("Ag", f.bx+66, f.by+f.bh*0.68);
     var colX=f.bx+f.bw*0.52, sizes=[62,46,34,25], ry=f.by+70;
     for (var k=0;k<4;k++){
-      g.fillStyle=INK; g.font='700 '+sizes[k]+'px "Inter Tight", Inter, sans-serif';
+      g.fillStyle=INK; g.font='700 '+sizes[k]+'px "Bricolage Grotesque", "Space Grotesk", sans-serif';
       g.fillText("Ag", colX, ry);
       bar(g, colX+92, ry-sizes[k]*0.62, f.bw*0.30-92*(k*0.14+0.4), Math.max(9,sizes[k]*0.22), inka(0.09));
       ry+=sizes[k]+34;
@@ -523,7 +523,7 @@
   function mPoster(g,p,i){
     g.textAlign="left";
     var word=p.name.toUpperCase();
-    g.font=fitText(g, word, '800 SIZEpx "Inter Tight", Inter, sans-serif', TW-220, 168);
+    g.font=fitText(g, word, '800 SIZEpx "Bricolage Grotesque", "Space Grotesk", sans-serif', TW-220, 168);
     var totW=g.measureText(word).width, xcur=(TW-totW)/2, baseY=TH*0.5;
     for (var k=0;k<word.length;k++){
       var ch=word[k], cw=g.measureText(ch).width;
@@ -561,7 +561,7 @@
     g.fillStyle=bg; g.fillRect(0,0,TW,TH);
 
     try { g.letterSpacing = "0px"; } catch(e){}
-    g.font='800 430px "Inter Tight", Inter, sans-serif';
+    g.font='800 430px "Bricolage Grotesque", "Space Grotesk", sans-serif';
     g.fillStyle=inka(0.05); g.textAlign="right"; g.textBaseline="alphabetic";
     g.fillText(pad2(i+1), TW-20, TH-36);
     g.textAlign="left";
@@ -576,12 +576,12 @@
     g.restore();
 
     try { g.letterSpacing = "2px"; } catch(e){}
-    g.font="700 22px Inter, sans-serif"; g.fillStyle=inka(0.55);
+    g.font='700 22px "Space Grotesk", sans-serif'; g.fillStyle=inka(0.55);
     g.textAlign="left";  g.fillText(pad2(i+1), TPAD, TPAD+20);
     g.textAlign="right"; g.fillText(p.cat.toUpperCase(), TW-TPAD, TPAD+20);
     g.fillText(p.year, TW-TPAD, TH-TPAD+8);
     try { g.letterSpacing = "1px"; } catch(e){}
-    g.font="800 24px Inter, sans-serif"; g.fillStyle=INK;
+    g.font='700 24px "Space Grotesk", sans-serif'; g.fillStyle=INK;
     g.textAlign="left";  g.fillText(p.name.toUpperCase(), TPAD, TH-TPAD+8);
     try { g.letterSpacing = "0px"; } catch(e){}
 
@@ -779,9 +779,20 @@
     }
   }
   window.addEventListener("resize", measure);
+  function warmFonts(){
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    return Promise.all([
+      document.fonts.load('800 100px "Bricolage Grotesque"'),
+      document.fonts.load('700 100px "Bricolage Grotesque"'),
+      document.fonts.load('700 22px "Space Grotesk"'),
+      document.fonts.load('500 22px "Space Grotesk"'),
+      document.fonts.load('400 22px "Space Grotesk"')
+    ]).catch(function(){});
+  }
   if (document.fonts && document.fonts.ready){
     document.fonts.ready.then(function(){ measure(); repaintCovers(); });
   }
+  warmFonts().then(function(){ measure(); repaintCovers(); });
   window.addEventListener("load", function(){ measure(); repaintCovers(); });
 
   /* ---------- scroll engine (virtual, lerped) ---------- */

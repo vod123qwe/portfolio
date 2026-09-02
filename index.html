@@ -55,9 +55,7 @@
   .menu a:hover{ opacity:.55; }
   .menu a .arr{ display:inline-block; width:0; overflow:hidden; vertical-align:top; transition:width .25s ease; }
   .menu a.on .arr, .menu a:hover .arr{ width:1.35em; }
-  .audio{ margin-left:17vw; white-space:nowrap; }
-  .where{ margin-left:6.5vw; }
-  .where span{ display:block; }
+  .where{ margin-left:23vw; }
   .mail{ margin-left:auto; white-space:nowrap; }
   .mail a{ color:var(--ink); font-weight:700; }
 
@@ -141,7 +139,10 @@
   .entry.on .e-desc{ color:#5c5c58; }
   .entry:focus-visible{ outline:2px solid var(--ink); outline-offset:4px; border-radius:2px; }
 
-  /* ---------- counter ---------- */
+  /* ---------- manifest + counter ---------- */
+  .intro{ display:flex; flex-direction:column; gap:2px; margin-bottom:26px;
+    font:500 15px/1.5 "Space Grotesk", sans-serif; color:var(--ink); }
+  .intro .i-name{ font-weight:700; }
   .count{ position:fixed; left:var(--pad); bottom:18px; z-index:5; }
   .count-label{ display:block; margin-bottom:6px; }
   .count-row{ display:flex; align-items:flex-start; }
@@ -174,15 +175,16 @@
   /* mobile dot rail */
   .dots{ display:none; }
 
-  @media (max-width:1280px){ .meta{ display:none; } .menu{ margin-left:9vw; } .audio{ margin-left:9vw; } }
+  @media (max-width:1280px){ .meta{ display:none; } .menu{ margin-left:9vw; } .where{ margin-left:14vw; } }
   @media (max-width:1000px){
     :root{ --pad:22px; }
     .rail{ display:none; }
     .m-title{ display:flex; }
     .card{ width:min(80vw, 480px); }
     .count-win{ font-size:clamp(64px, 20vw, 110px); }
-    .audio, .where{ display:none; }
+    .where{ display:none; }
     .menu{ margin-left:8vw; }
+    .intro{ position:fixed; left:var(--pad); top:158px; font-size:13.5px; margin-bottom:0; }
     .dots{ position:fixed; right:8px; top:50%; transform:translateY(-50%); z-index:25;
       display:flex; flex-direction:column; gap:2px; }
     .dots button{ width:28px; height:26px; background:none; border:0; cursor:pointer;
@@ -198,26 +200,24 @@
 <header>
   <div class="logo">JP</div>
   <nav class="menu small" aria-label="Main">
-    <span class="lbl">Menu</span>
+    <span class="lbl">menu</span>
     <a class="on" href="#"><span class="arr">&rarr;&nbsp;</span>Work</a>
     <a href="#"><span class="arr">&rarr;&nbsp;</span>About</a>
     <a href="#"><span class="arr">&rarr;&nbsp;</span>Playground</a>
     <a href="#"><span class="arr">&rarr;&nbsp;</span>Contact</a>
   </nav>
-  <div class="small audio"><span class="lbl">Audio</span> Off</div>
   <div class="small where">
-    <span>Working globally</span>
-    <span class="lbl" id="time">KRK, --:--</span>
+    <span class="lbl" id="time">krakow, pl --:--</span>
   </div>
-  <div class="small mail"><span class="lbl">For inquiries</span> <a href="mailto:hello@jarek.studio">hello@jarek.studio</a></div>
+  <div class="small mail"><span class="lbl">contact</span> <a href="mailto:hello@jarek.studio">hello@jarek.studio</a></div>
 </header>
 
 <aside class="meta" id="meta" aria-hidden="true">
-  <div class="m-row"><span class="m-l">Project</span><span class="m-v" id="mName"></span></div>
-  <div class="m-row"><span class="m-l">Type</span><span class="m-v" id="mType"></span></div>
-  <div class="m-row"><span class="m-l">Stack</span><span class="m-v" id="mStack"></span></div>
-  <div class="m-row"><span class="m-l">Year</span><span class="m-v" id="mYear"></span></div>
-  <div class="m-row"><span class="m-l">Status</span><span class="m-v" id="mStat"></span></div>
+  <div class="m-row"><span class="m-l">project</span><span class="m-v" id="mName"></span></div>
+  <div class="m-row"><span class="m-l">type</span><span class="m-v" id="mType"></span></div>
+  <div class="m-row"><span class="m-l">stack</span><span class="m-v" id="mStack"></span></div>
+  <div class="m-row"><span class="m-l">year</span><span class="m-v" id="mYear"></span></div>
+  <div class="m-row"><span class="m-l">status</span><span class="m-v" id="mStat"></span></div>
 </aside>
 
 <canvas id="gl"></canvas>
@@ -230,7 +230,12 @@
 </nav>
 
 <div class="count">
-  <span class="count-label small lbl">Selected work</span>
+  <div class="intro">
+    <span class="i-name">jarek pastuszak.</span>
+    <span>designs products</span>
+    <span>people keep using.</span>
+  </div>
+  <span class="count-label small lbl">index</span>
   <div class="count-row">
     <div class="count-win"><div class="count-strip" id="strip"></div></div>
     <span class="count-total" id="total"></span>
@@ -245,7 +250,7 @@
 
 <nav class="dots" id="dots" aria-label="Projects"></nav>
 
-<div class="hint small lbl">Scroll</div>
+<div class="hint small lbl">scroll</div>
 <div class="cur" id="cur"></div>
 
 <script>
@@ -1213,7 +1218,7 @@
   /* ---------- clock ---------- */
   function tick(){
     var f = new Intl.DateTimeFormat("en-GB", { hour:"2-digit", minute:"2-digit", timeZone:"Europe/Warsaw" });
-    $("#time").textContent = "KRK, " + f.format(new Date());
+    $("#time").textContent = "krakow, pl " + f.format(new Date());
   }
   tick();
   setInterval(tick, 20000);
